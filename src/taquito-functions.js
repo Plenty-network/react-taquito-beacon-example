@@ -1,6 +1,6 @@
 import { TezosToolkit } from '@taquito/taquito';
 import { BeaconWallet } from '@taquito/beacon-wallet';
-const rpcNode = 'https://mainnet.smartpy.io/';
+const rpcNode = 'https://tezos-prod.cryptonomic-infra.tech/';
 
 // This function fetches plenty balance of any address for you.
 export const fetchPlentyBalanceOfUser = async (userAddress) => {
