@@ -5,7 +5,7 @@ import { BeaconWallet } from '@taquito/beacon-wallet';
 export const ConnectWalletAPI = async () => {
   try {
     const network = {
-      type: 'mainnet',
+      type: 'hangzhounet',
     };
     const options = {
       name: 'Test App',
@@ -37,7 +37,7 @@ export const ConnectWalletAPI = async () => {
 export const DisconnectWalletAPI = async () => {
   try {
     const options = {
-      name: 'mainnet',
+      name: 'hangzhounet',
     };
     const wallet = new BeaconWallet(options);
     await wallet.disconnect();

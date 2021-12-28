@@ -1,6 +1,6 @@
 import { TezosToolkit } from '@taquito/taquito';
 import { BeaconWallet } from '@taquito/beacon-wallet';
-const rpcNode = 'https://tezos-prod.cryptonomic-infra.tech/';
+const rpcNode = 'https://hangzhounet.smartpy.io';
 
 // This function fetches plenty balance of any address for you.
 export const fetchPlentyBalanceOfUser = async (userAddress) => {
@@ -31,12 +31,33 @@ export const fetchPlentyBalanceOfUser = async (userAddress) => {
   }
 };
 
+export const getTotalSupply = async () => {
+  try {
+    const Tezos = new TezosToolkit(rpcNode);
+    Tezos.setProvider(rpcNode);
+    const contractAddr = 'KT1H4p52kRqjgb65dPKzXsSJNRmbu2Xh6dd4';
+    const contractInstance = await Tezos.contract.at(contractAddr);
+    const contractStorage = await contractInstance.storage();
+    const totalSupply = contractStorage.totalSupply;
+    return {
+      success: true,
+      totalSupply,
+    };
+  } catch (err) {
+    console.log(err);
+    return {
+      success: false,
+      totalSupply: 0,
+    };
+  }
+};
+
 // This function checks if the wallet is connected with app to perform any operation.
 
 const CheckIfWalletConnected = async (wallet) => {
   try {
     const network = {
-      type: 'mainnet',
+      type: 'hangzhounet',
     };
     const activeAccount = await wallet.client.getActiveAccount();
     if (!activeAccount) {
@@ -89,6 +110,51 @@ export const transferPlenty = async (amount, payerAddress) => {
             payerAddress,
             transferAmount
           )
+        );
+      const batchOperation = await batch.send();
+      await batchOperation.confirmation();
+      return {
+        success: true,
+        opID: batchOperation.opHash,
+      };
+    }
+  } catch (err) {
+    console.log(err);
+    return {
+      success: false,
+      opID: null,
+    };
+  }
+};
+
+export const mint = async (amount, payerAddress) => {
+  try {
+    const options = {
+      name: 'Test App',
+    };
+
+    const wallet = new BeaconWallet(options);
+    const WALLET_RESP = await CheckIfWalletConnected(wallet);
+
+    if (WALLET_RESP.success) {
+      const account = await wallet.client.getActiveAccount();
+      const userAddress = account.address;
+      const Tezos = new TezosToolkit(rpcNode);
+      Tezos.setRpcProvider(rpcNode);
+      Tezos.setWalletProvider(wallet);
+      const plentyContractAddress = 'KT1H4p52kRqjgb65dPKzXsSJNRmbu2Xh6dd4';
+      const plentyTokenDecimal = 18;
+      const plentyContractInstance = await Tezos.contract.at(
+        plentyContractAddress
+      );
+      // const transferAmount = Math.floor(
+      //   amount * Math.pow(10, plentyTokenDecimal)
+      // );
+      let batch = null;
+      batch = await Tezos.wallet
+        .batch()
+        .withContractCall(
+          plentyContractInstance.methods.mint(payerAddress, amount)
         );
       const batchOperation = await batch.send();
       await batchOperation.confirmation();

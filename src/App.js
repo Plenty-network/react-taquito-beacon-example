@@ -6,7 +6,12 @@ import {
   FetchWalletAPI,
 } from './beacon-functions';
 
-import { fetchPlentyBalanceOfUser, transferPlenty } from './taquito-functions';
+import {
+  fetchPlentyBalanceOfUser,
+  transferPlenty,
+  mint,
+  getTotalSupply,
+} from './taquito-functions';
 function App() {
   const [walletAddress, setWalletAddress] = useState('');
   const [plentyHolderAddress, setPlentyHolderAddress] = useState('');
@@ -15,6 +20,9 @@ function App() {
   const [amount, setAmount] = useState(0);
   const [receiverAddress, setReceiverAddress] = useState('');
   const [transferLoading, setTransferLoading] = useState(false);
+  const [mintAmount, setMintAmount] = useState(0);
+  const [mintAddress, setMintAddress] = useState('');
+  const [mintLoading, setMintLoading] = useState(false);
 
   useEffect(() => {
     FetchWalletAPI().then((resp) => {
@@ -32,6 +40,31 @@ function App() {
 
   const receiverAddressInputHandler = (value) => {
     setReceiverAddress(value);
+  };
+
+  const mintHandler = () => {
+    setMintLoading(true);
+    mint(mintAmount, mintAddress)
+      .then((resp) => {
+        setMintLoading(false);
+        alert(resp.opID);
+      })
+      .catch((err) => {
+        console.log(err);
+        setMintLoading(false);
+        alert('something went wrong with mint');
+      });
+  };
+
+  const showTotalSupplyHandler = () => {
+    getTotalSupply()
+      .then((resp) => {
+        alert(resp.totalSupply);
+      })
+      .catch((err) => {
+        console.log(err);
+        alert('something went wrong while fetching total supply');
+      });
   };
 
   const transferPlentyHandler = () => {
@@ -118,6 +151,23 @@ function App() {
       />
       <button onClick={transferPlentyHandler}>Send Plenty</button>
       {transferLoading ? <p>...Loading</p> : null}
+
+      <br />
+      <hr />
+      <input
+        type="number"
+        onChange={(event) => setMintAmount(parseInt(event.target.value))}
+      />
+      <input onChange={(event) => setMintAddress(event.target.value)} />
+      <button onClick={() => mintHandler()}>Mint</button>
+      <hr />
+      <button
+        onClick={() => {
+          showTotalSupplyHandler();
+        }}
+      >
+        Show Total Suppy
+      </button>
     </div>
   );
 }
